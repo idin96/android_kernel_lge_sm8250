@@ -1550,46 +1550,40 @@ int rtc6226_power_up(struct rtc6226_device *radio)
 
 	/* mpxconfig */
 	/* Disable Mute / De-emphasis / Volume 12 */
-	radio->registers[MPXCFG] = 0x000c |
-		MPXCFG_CSR0_DIS_MUTE |
-		((de << 12) & MPXCFG_CSR0_DEEM);
-	retval = rtc6226_set_register(radio, MPXCFG);
-	if (retval < 0)
-		goto done;
-	/* enable RDS / STC interrupt */
-	radio->registers[SYSCFG] |= SYSCFG_CSR0_RDSIRQEN;
-	radio->registers[SYSCFG] |= SYSCFG_CSR0_STDIRQEN;
-	/*radio->registers[SYSCFG] |= SYSCFG_CSR0_RDS_EN;*/
-	retval = rtc6226_set_register(radio, SYSCFG);
-	if (retval < 0)
-		goto done;
-
 	radio->registers[PADCFG] &= ~PADCFG_CSR0_GPIO;
 	radio->registers[PADCFG] |= 0x1 << 2;
 	retval = rtc6226_set_register(radio, PADCFG);
-	if (retval < 0)
-		goto done;
-		/* I2S salve */
-		radio->registers[I2SCFG] = 0x2480;
-		retval = rtc6226_set_register(radio, I2SCFG);
-		if (retval < 0)
-			goto done;
+	if (retval < 0) {
+	    goto done;
+	}	
 
-		/*set default rssi threshold*/
-		retval = rtc6226_set_rssi_threshold(radio, DEFAULT_RSSI_TH);
-		if (retval < 0)
-			FMDERR("%s fail to set rssi threshold\n", __func__);
+	/* I2S salve */
+	radio->registers[I2SCFG] = 0x2480;
+	retval = rtc6226_set_register(radio, I2SCFG);
+	if (retval < 0) {
+    	goto done;
+	}
+
+	/* set default rssi threshold */
+	retval = rtc6226_set_rssi_threshold(radio, DEFAULT_RSSI_TH);
+	if (retval < 0) {
+    	FMDERR("%s fail to set rssi threshold\n", __func__);
+	}
+
 	/* powerconfig */
 	/* Enable FM */
 	radio->registers[POWERCFG] = POWERCFG_CSR0_ENABLE;
 	retval = rtc6226_set_register(radio, POWERCFG);
-	if (retval < 0)
-		goto done;
-	/*wait for radio enable to complete*/
+	if (retval < 0) {
+    	goto done;
+	}
+
+	/* wait for radio enable to complete */
 	msleep(30);
 	retval = rtc6226_get_all_registers(radio);
-	if (retval < 0)
-		goto done;
+	if (retval < 0) {
+    	goto done;
+	}
 
 	FMDBG("%s : DeviceID=0x%4.4hx ChipID=0x%4.4hx\n", __func__,
 		radio->registers[DEVICEID], radio->registers[CHIPID]);
